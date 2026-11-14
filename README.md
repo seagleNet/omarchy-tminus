@@ -15,7 +15,7 @@ timer:
 ![The bar with a running timer](assets/bar.png)
 ![The bar in the final seconds](assets/bar-alert.png)
 
-<img src="assets/popup.png" alt="The popup with three running timers" width="389"> <img src="assets/popup-completion.png" alt="The popup completing t- options" width="389">
+<img src="assets/popup.png" alt="The popup with three running timers" width="380"> <img src="assets/popup-completion.png" alt="The popup completing t- options" width="380">
 
 ## Requirements
 
