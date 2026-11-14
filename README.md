@@ -20,9 +20,9 @@ timer:
 ## Requirements
 
 - Omarchy with the Omarchy shell (omarchy-shell)
-- tminus 0.4 or later on the login shell's `PATH`; see its
-  [install instructions](https://github.com/seagleNet/tminus#install)
-  (see the `command` setting if it isn't on the `PATH`)
+- tminus 0.4 or later
+  ([install instructions](https://github.com/seagleNet/tminus#install)) on the
+  login shell's `PATH`, or set the `command` setting to where it is
 
 ## Install
 
