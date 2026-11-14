@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches: [master, dev]
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    # Arch, like Omarchy, so Qt and Quickshell match what the plugin runs on.
+    # The image is pinned, but every run upgrades it to the current packages;
+    # the keyring goes first so an older image still accepts packages signed
+    # with newer keys.
+    container: archlinux:base-20261025.0.616225
+    permissions:
+      contents: read
+    steps:
+      - name: Install tools
+        run: |
+          pacman -Sy --noconfirm --needed archlinux-keyring
+          pacman -Su --noconfirm --needed qt6-declarative quickshell jq diffutils libarchive
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # The widget builds on Omarchy's shell (qs.Commons, qs.Ui), which qmllint
+      # needs to resolve. It comes from the current omarchy package on the edge
+      # repository, checked against the repository's checksum; only its shell/
+      # is unpacked, and nothing is installed.
+      - name: Omarchy shell
+        shell: bash
+        run: |
+          repo=https://pkgs.omarchy.org/edge/x86_64
+          curl -fsSL -o "$RUNNER_TEMP/omarchy.db" "$repo/omarchy.db"
+          desc=$(bsdtar -xOf "$RUNNER_TEMP/omarchy.db" 'omarchy-[0-9]*/desc')
+          file=$(awk '/^%FILENAME%$/ { getline; print }' <<<"$desc")
+          sum=$(awk '/^%SHA256SUM%$/ { getline; print }' <<<"$desc")
+          echo "omarchy package: $file"
+          curl -fsSL -o "$RUNNER_TEMP/omarchy.pkg.tar.zst" "$repo/$file"
+          echo "$sum  $RUNNER_TEMP/omarchy.pkg.tar.zst" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/omarchy" "$RUNNER_TEMP/imports"
+          bsdtar -xf "$RUNNER_TEMP/omarchy.pkg.tar.zst" -C "$RUNNER_TEMP/omarchy" usr/share/omarchy/shell
+          ln -s "$RUNNER_TEMP/omarchy/usr/share/omarchy/shell" "$RUNNER_TEMP/imports/qs"
+
+      - name: qmlformat
+        run: |
+          for f in BarWidget.qml Logic.js; do
+            /usr/lib/qt6/bin/qmlformat "$f" | diff -u "$f" -
+          done
+
+      # Settings in .qmllint.ini: any warning fails.
+      - name: qmllint
+        run: /usr/lib/qt6/bin/qmllint -I "$RUNNER_TEMP/imports" BarWidget.qml Logic.js
+
+      - name: manifest.json
+        run: |
+          jq -e '.id == "seaglenet.tminus" and .entryPoints.barWidget == "BarWidget.qml"' manifest.json
+          jq -r '.entryPoints[]' manifest.json | xargs ls -l
+          jq -e . i18n/*.json > /dev/null
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    container: archlinux:base-20261025.0.616225
+    permissions:
+      contents: read
+    steps:
+      - name: Install tools
+        run: |
+          pacman -Sy --noconfirm --needed archlinux-keyring
+          pacman -Su --noconfirm --needed nodejs
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: node --test
+        run: node --test tests
