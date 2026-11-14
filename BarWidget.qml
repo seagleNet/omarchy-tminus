@@ -7,6 +7,7 @@ import Quickshell.Io
 import qs.Commons
 import qs.Commons as Commons
 import qs.Ui
+import "Logic.js" as Logic
 
 // The running tminus timer in the bar. It follows `t- ctl status --follow`,
 // which prints a line of Waybar-style JSON per change and never ends on its
@@ -23,10 +24,7 @@ BarWidget {
   }
 
   // A leading `~/` is expanded here: no shell sees the command to do it.
-  readonly property string command: {
-    var c = String(setting("command", "t-")).trim() || "t-"
-    return c.indexOf("~/") === 0 ? Quickshell.env("HOME") + c.slice(1) : c
-  }
+  readonly property string command: Logic.expandHome(setting("command", "t-"), Quickshell.env("HOME"))
   readonly property string followName: String(setting("name", "")).trim()
   // A timer picked in the popup, shown in the bar instead of the newest one
   // until it ends. Not saved: a shell restart goes back to the setting.
@@ -89,57 +87,30 @@ BarWidget {
   }
 
   function update(line) {
-    var data
-    try {
-      data = JSON.parse(line)
-    } catch (e) {
-      return
-    }
-    if (!Util.isPlainObject(data))
+    var status = Logic.parseStatus(line)
+    if (!status)
       return
     root.broken = false
     // The picked timer is gone: back to the newest (or the configured one).
-    if (data["class"] === "idle" && root.pinnedName) {
+    if (status.state === "idle" && root.pinnedName) {
       root.pinnedName = ""
       return
     }
-    root.timerState = String(data["class"] || "idle")
-    // Bounded: a label or title can be as long as anyone typed it.
-    var clock = String(data.text || "").slice(0, 80)
+    root.timerState = status.state
     // In the final seconds, every tick flashes white and fades to red.
-    if (root.timerState === "alert" && clock !== root.clock) {
+    if (root.timerState === "alert" && status.clock !== root.clock) {
       root.alertFlash = true
       alertFlashEnd.restart()
     }
-    root.clock = clock
-    root.tooltip = String(data.tooltip || "").slice(0, 600)
-    root.timerName = typeof data.name === "string" ? data.name : ""
+    root.clock = status.clock
+    root.tooltip = status.tooltip
+    root.timerName = status.name
   }
 
   function updateList(raw) {
-    var data
-    try {
-      data = JSON.parse(String(raw || ""))
-    } catch (e) {
+    var list = Logic.parseTimerList(raw)
+    if (!list)
       return
-    }
-    if (!Array.isArray(data))
-      return
-    var list = []
-    for (var i = 0; i < data.length && list.length < 20; i++) {
-      var t = data[i]
-      if (!Util.isPlainObject(t) || typeof t.name !== "string" || t.name === "")
-        continue
-      list.push({
-        name: t.name.slice(0, 60),
-        timerState: String(t.state || "").slice(0, 20),
-        clock: String(t.clock || "").slice(0, 20),
-        title: String(t.title || "").slice(0, 80),
-        segment: String(t.segment || "").slice(0, 20),
-        headless: t.mode === "headless",
-        pid: Math.max(0, Math.floor(Number(t.pid) || 0))
-      })
-    }
     for (var j = 0; j < list.length; j++) {
       if (j < timerModel.count && timerModel.get(j).name === list[j].name) {
         timerModel.set(j, list[j])
@@ -214,40 +185,6 @@ BarWidget {
     ctlFor(root.timerName || root.shownName, words)
   }
 
-  // Split t- arguments into words: whitespace separates them, and single or
-  // double quotes keep a title with spaces together (`-t "Tea break"`).
-  // Nothing else is special: the words go to t- as they are, never to a shell.
-  function words(line) {
-    var out = []
-    var word = ""
-    var inWord = false
-    var quote = ""
-    var text = String(line || "")
-    for (var i = 0; i < text.length; i++) {
-      var c = text[i]
-      if (quote) {
-        if (c === quote)
-          quote = ""
-        else
-          word += c
-      } else if (c === '"' || c === "'") {
-        quote = c
-        inWord = true
-      } else if (c === " " || c === "\t" || c === "\n") {
-        if (inWord)
-          out.push(word)
-        word = ""
-        inWord = false
-      } else {
-        word += c
-        inWord = true
-      }
-    }
-    if (inWord)
-      out.push(word)
-    return out
-  }
-
   // `t- <args> --headless`: a timer that lives only in the bar. `t- --check`
   // looks at the arguments first (and the config, presets, themes, name),
   // so a mistake shows under the start field instead of as a notification;
@@ -255,7 +192,7 @@ BarWidget {
   // `fromField`: clear the field once it started.
   property string startError: ""
   function startWith(args, fromField) {
-    var argv = root.words(args)
+    var argv = Logic.words(args)
     if (argv.length === 0 || checker.running)
       return
     checker.argv = argv
@@ -277,17 +214,6 @@ BarWidget {
       refreshSoon.restart()
   }
 
-  // The first line of t-'s complaint, without its `tminus: ` / `error: `.
-  function errorLine(raw, exitCode) {
-    var lines = String(raw || "").split("\n")
-    for (var i = 0; i < lines.length; i++) {
-      var line = lines[i].trim().replace(/^(tminus|error): */, "")
-      if (line !== "")
-        return line.length > 300 ? line.slice(0, 299) + "\u2026" : line
-    }
-    return strings.t("popup.startFailed").arg(exitCode)
-  }
-
   Process {
     id: checker
     property var argv: []
@@ -299,7 +225,7 @@ BarWidget {
       if (exitCode === 0)
         root.started(checker.argv, checker.fromField)
       else
-        root.startError = root.errorLine(checkerErrors.text, exitCode)
+        root.startError = Logic.errorLine(checkerErrors.text) || strings.t("popup.startFailed").arg(exitCode)
     }
   }
 
@@ -322,7 +248,7 @@ BarWidget {
   // blinking out until the new answer arrives.
   readonly property var shownSuggestions: {
     var text = startField.text
-    var start = root.currentWordStart(text)
+    var start = Logic.currentWordStart(text)
     if (start < 0 || start !== root.suggestionsStart)
       return []
     var word = text.slice(start)
@@ -332,26 +258,8 @@ BarWidget {
   }
   readonly property int shownIndex: Math.min(root.suggestionIndex, root.shownSuggestions.length - 1)
 
-  // Where the word being typed starts, or -1 inside an open quote (a title
-  // being typed has nothing to complete).
-  function currentWordStart(text) {
-    var start = 0
-    var quote = ""
-    for (var i = 0; i < text.length; i++) {
-      var c = text[i]
-      if (quote) {
-        if (c === quote)
-          quote = ""
-      } else if (c === '"' || c === "'")
-        quote = c
-      else if (c === " " || c === "\t")
-        start = i + 1
-    }
-    return quote ? -1 : start
-  }
-
   function complete(text) {
-    var start = root.currentWordStart(text)
+    var start = Logic.currentWordStart(text)
     if (start < 0) {
       root.setSuggestions(text, [])
       return
@@ -360,38 +268,14 @@ BarWidget {
     if (completer.running)
       // picked up when it exits
       return
-    var argv = root.words(text.slice(0, start))
-    argv.push(text.slice(start))
+    var argv = Logic.completionArgs(text)
     completer.command = ["bash", "-lc", 'COMPLETE=fish exec "$@"', "bash", root.command, "--", "t-"].concat(argv)
     completer.forText = text
     completer.running = true
   }
 
-  function parseSuggestions(text, raw) {
-    var word = text.slice(Math.max(0, root.currentWordStart(text)))
-    var lines = String(raw || "").split("\n")
-    var list = []
-    for (var i = 0; i < lines.length && list.length < 8; i++) {
-      var tab = lines[i].indexOf("\t")
-      var value = (tab < 0 ? lines[i] : lines[i].slice(0, tab)).slice(0, 80)
-      var help = tab < 0 ? "" : lines[i].slice(tab + 1).slice(0, 300)
-      if (value === "" || value === word)
-        continue
-      // Flags only once one is being typed; subcommands never start a timer.
-      if (value[0] === "-" && word[0] !== "-")
-        continue
-      if (["ctl", "completions", "man", "help"].indexOf(value) !== -1)
-        continue
-      list.push({
-        value: value,
-        help: help
-      })
-    }
-    root.setSuggestions(text, list)
-  }
-
   function setSuggestions(text, list) {
-    root.suggestionsStart = root.currentWordStart(text)
+    root.suggestionsStart = Logic.currentWordStart(text)
     root.suggestions = list
     root.suggestionIndex = 0
   }
@@ -406,7 +290,7 @@ BarWidget {
   function acceptSuggestion(index) {
     var item = root.shownSuggestions[index]
     var text = startField.text
-    var start = root.currentWordStart(text)
+    var start = Logic.currentWordStart(text)
     if (!item || start < 0)
       return
     startField.text = text.slice(0, start) + item.value + " "
@@ -420,7 +304,7 @@ BarWidget {
       onStreamFinished: {
         // Only for the text it was asked about; typing on asks again.
         if (completer.forText === startField.text)
-          root.parseSuggestions(completer.forText, text)
+          root.setSuggestions(completer.forText, Logic.parseSuggestions(completer.forText, text))
       }
     }
     onExited: {
