@@ -17,7 +17,7 @@
         "description": "The running tminus countdown: left = pause/resume, middle = next segment, right = all timers with controls, scroll = add/take time",
         "category": "Time",
         "allowMultiple": true,
-        "defaultSection": "centerEnd",
+        "defaultSection": "center",
         "defaults": {
             "command": "t-",
             "name": "",
