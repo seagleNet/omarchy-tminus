@@ -20,7 +20,8 @@ timer:
 ## Requirements
 
 - Omarchy with the Omarchy shell (omarchy-shell)
-- tminus 0.4 or later on the login shell's `PATH`: `cargo install tminus`
+- tminus 0.4 or later on the login shell's `PATH`; see its
+  [install instructions](https://github.com/seagleNet/tminus#install)
   (see the `command` setting if it isn't on the `PATH`)
 
 ## Install
