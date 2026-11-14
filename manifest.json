@@ -1,54 +1,54 @@
 {
-  "schemaVersion": 1,
-  "id": "io.github.seaglenet.tminus",
-  "name": "tminus",
-  "version": "0.1.0",
-  "author": "seagle",
-  "license": "MIT",
-  "description": "The running tminus countdown in the bar, with a popup to control every running timer",
-  "kinds": [
-    "bar-widget"
-  ],
-  "entryPoints": {
-    "barWidget": "BarWidget.qml"
-  },
-  "barWidget": {
-    "displayName": "tminus",
-    "description": "The running tminus countdown: left = pause/resume, middle = next segment, right = all timers with controls, scroll = add/take time",
-    "category": "Time",
-    "allowMultiple": true,
-    "defaultSection": "centerEnd",
-    "defaults": {
-      "command": "t-",
-      "name": "",
-      "step": "1m",
-      "start": ""
+    "schemaVersion": 1,
+    "id": "seaglenet.tminus",
+    "name": "tminus",
+    "version": "0.1.0",
+    "author": "seagleNet",
+    "license": "MIT",
+    "description": "The running tminus countdown in the bar, with a popup to control every running timer",
+    "kinds": [
+        "bar-widget"
+    ],
+    "entryPoints": {
+        "barWidget": "BarWidget.qml"
     },
-    "schema": [
-      {
-        "key": "command",
-        "type": "string",
-        "label": "tminus command",
-        "description": "The t- binary, if it is not on the login shell's PATH (e.g. ~/.cargo/bin/t-)."
-      },
-      {
-        "key": "name",
-        "type": "string",
-        "label": "Timer name",
-        "description": "Follow only the timer with this name (t- -n NAME). Empty follows the newest timer."
-      },
-      {
-        "key": "step",
-        "type": "string",
-        "label": "Scroll step",
-        "description": "Time added or taken per scroll notch, e.g. 1m or 30s."
-      },
-      {
-        "key": "start",
-        "type": "string",
-        "label": "Start arguments",
-        "description": "With no timer running, show an icon that starts t- with these arguments, e.g. 25m:work 5m:break x4 --notify. It always runs --headless. Empty hides the widget while no timer runs."
-      }
-    ]
-  }
+    "barWidget": {
+        "displayName": "tminus",
+        "description": "The running tminus countdown: left = pause/resume, middle = next segment, right = all timers with controls, scroll = add/take time",
+        "category": "Time",
+        "allowMultiple": true,
+        "defaultSection": "centerEnd",
+        "defaults": {
+            "command": "t-",
+            "name": "",
+            "step": "1m",
+            "start": ""
+        },
+        "schema": [
+            {
+                "key": "command",
+                "type": "string",
+                "label": "tminus command",
+                "description": "The t- binary, if it is not on the login shell's PATH (e.g. ~/.cargo/bin/t-)."
+            },
+            {
+                "key": "name",
+                "type": "string",
+                "label": "Timer name",
+                "description": "Follow only the timer with this name (t- -n NAME). Empty follows the newest timer."
+            },
+            {
+                "key": "step",
+                "type": "string",
+                "label": "Scroll step",
+                "description": "Time added or taken per scroll notch, e.g. 1m or 30s."
+            },
+            {
+                "key": "start",
+                "type": "string",
+                "label": "Start arguments",
+                "description": "With no timer running, show an icon that starts t- with these arguments, e.g. 25m:work 5m:break x4 --notify. It always runs --headless. Empty hides the widget while no timer runs."
+            }
+        ]
+    }
 }

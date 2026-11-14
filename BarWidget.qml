@@ -15,7 +15,7 @@ import qs.Ui
 // (`t- ctl list --json`, re-read every second while it is open).
 BarWidget {
   id: root
-  moduleName: "io.github.seaglenet.tminus"
+  moduleName: "seaglenet.tminus"
 
   Commons.Translations { id: strings; directory: Qt.resolvedUrl("i18n") }
 

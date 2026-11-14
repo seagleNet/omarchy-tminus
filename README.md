@@ -17,8 +17,8 @@ It opens a bar-only timer in a terminal with its clock and effects (keys there c
 omarchy plugin add https://github.com/seagleNet/omarchy-tminus.git --enable
 ```
 
-Move it with `omarchy bar move io.github.seaglenet.tminus --section right`,
-update it with `omarchy plugin update io.github.seaglenet.tminus`.
+Move it with `omarchy bar move seaglenet.tminus --section right`,
+update it with `omarchy plugin update seaglenet.tminus`.
 
 ## Using it
 
@@ -38,7 +38,7 @@ theme's urgent color. On a vertical bar it shows only the icon.
 Set them on the widget's entry in `~/.config/omarchy/shell.json` (it reloads on save):
 
 ```json
-{ "id": "io.github.seaglenet.tminus", "step": "5m", "start": "25m:work 5m:break x4 --notify" }
+{ "id": "seaglenet.tminus", "step": "5m", "start": "25m:work 5m:break x4 --notify" }
 ```
 
 | Key | Default | Meaning |
