@@ -12,6 +12,11 @@ timer:
   them in a terminal with the big clock and effects, and a field to start
   another one, with `t-`'s own completion.
 
+![The bar with a running timer](assets/bar.png)
+![The bar in the final seconds](assets/bar-alert.png)
+
+<img src="assets/popup.png" alt="The popup with three running timers" width="389"> <img src="assets/popup-completion.png" alt="The popup completing t- options" width="389">
+
 ## Requirements
 
 - Omarchy with the Omarchy shell (omarchy-shell)
