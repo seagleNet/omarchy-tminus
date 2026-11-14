@@ -1,0 +1,4 @@
+{
+  "tooltip.start": "Start a timer: t- %1",
+  "tooltip.missing": "tminus is not running: %1 ctl status --follow failed"
+}
