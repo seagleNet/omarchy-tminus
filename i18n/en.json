@@ -1,4 +1,19 @@
 {
   "tooltip.start": "Start a timer: t- %1",
-  "tooltip.missing": "tminus is not running: %1 ctl status --follow failed"
+  "tooltip.missing": "tminus is not running: %1 ctl status --follow failed",
+  "popup.empty": "No timer running",
+  "popup.start": "Start %1",
+  "mode.headless": "in the bar",
+  "mode.window": "window",
+  "action.pause": "Pause",
+  "action.resume": "Resume",
+  "action.next": "Next segment",
+  "action.add": "Add %1",
+  "action.sub": "Take away %1",
+  "action.stop": "Stop",
+  "popup.placeholder": "New timer: 10m:tea, 25m@nord, @pomodoro",
+  "popup.startTyped": "Start this timer (Enter; Tab completes)",
+  "action.attach": "Open in a terminal, with its effects",
+  "action.focus": "Show its window",
+  "popup.startFailed": "t- --check failed (exit code %1)"
 }

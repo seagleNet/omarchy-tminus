@@ -5,7 +5,7 @@
   "version": "0.1.0",
   "author": "seagle",
   "license": "MIT",
-  "description": "The running tminus countdown in the bar: click to pause, scroll to add or take time",
+  "description": "The running tminus countdown in the bar, with a popup to control every running timer",
   "kinds": [
     "bar-widget"
   ],
@@ -14,7 +14,7 @@
   },
   "barWidget": {
     "displayName": "tminus",
-    "description": "The running tminus countdown: left = pause/resume, middle = next segment, right = stop, scroll = add/take time",
+    "description": "The running tminus countdown: left = pause/resume, middle = next segment, right = all timers with controls, scroll = add/take time",
     "category": "Time",
     "allowMultiple": true,
     "defaultSection": "centerEnd",
