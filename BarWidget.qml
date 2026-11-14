@@ -624,7 +624,7 @@ BarWidget {
                     opacity: timerRow.timer.state === "paused" ? 0.6 : 1
                     font.family: root.bar.fontFamily
                     font.pixelSize: Style.font.body
-                    width: Style.space(16)
+                    width: Style.space(12)
                     horizontalAlignment: Text.AlignHCenter
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
@@ -633,7 +633,7 @@ BarWidget {
                   Column {
                     id: rowText
                     anchors.left: rowGlyph.right
-                    anchors.leftMargin: Style.space(8)
+                    anchors.leftMargin: Style.space(6)
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: Style.space(1)
