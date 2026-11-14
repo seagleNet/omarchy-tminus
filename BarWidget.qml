@@ -17,7 +17,10 @@ BarWidget {
   id: root
   moduleName: "seaglenet.tminus"
 
-  Commons.Translations { id: strings; directory: Qt.resolvedUrl("i18n") }
+  Commons.Translations {
+    id: strings
+    directory: Qt.resolvedUrl("i18n")
+  }
 
   // A leading `~/` is expanded here: no shell sees the command to do it.
   readonly property string command: {
@@ -43,7 +46,9 @@ BarWidget {
   // From the last `t- ctl list --json`, while the popup is open. Rows are
   // updated in place: rebuilding them every second would tear down whatever
   // the mouse is over, so buttons blink and lose their hover.
-  ListModel { id: timerModel }
+  ListModel {
+    id: timerModel
+  }
   // One row's height (they're all alike), for the list's four-row cap.
   property real timerRowHeight: Style.space(40)
   property bool popupOpen: false
@@ -68,8 +73,10 @@ BarWidget {
   readonly property string iconPlus: String.fromCodePoint(0xF0415)
 
   function glyphFor(state) {
-    if (state === "paused") return iconPause
-    if (state === "done" || state === "waiting") return iconBell
+    if (state === "paused")
+      return iconPause
+    if (state === "done" || state === "waiting")
+      return iconBell
     return iconTimer
   }
 
@@ -77,12 +84,19 @@ BarWidget {
   implicitWidth: visible ? button.implicitWidth : 0
   implicitHeight: barSize
 
-  function close() { popupOpen = false }
+  function close() {
+    popupOpen = false
+  }
 
   function update(line) {
     var data
-    try { data = JSON.parse(line) } catch (e) { return }
-    if (!Util.isPlainObject(data)) return
+    try {
+      data = JSON.parse(line)
+    } catch (e) {
+      return
+    }
+    if (!Util.isPlainObject(data))
+      return
     root.broken = false
     // The picked timer is gone: back to the newest (or the configured one).
     if (data["class"] === "idle" && root.pinnedName) {
@@ -104,12 +118,18 @@ BarWidget {
 
   function updateList(raw) {
     var data
-    try { data = JSON.parse(String(raw || "")) } catch (e) { return }
-    if (!Array.isArray(data)) return
+    try {
+      data = JSON.parse(String(raw || ""))
+    } catch (e) {
+      return
+    }
+    if (!Array.isArray(data))
+      return
     var list = []
     for (var i = 0; i < data.length && list.length < 20; i++) {
       var t = data[i]
-      if (!Util.isPlainObject(t) || typeof t.name !== "string" || t.name === "") continue
+      if (!Util.isPlainObject(t) || typeof t.name !== "string" || t.name === "")
+        continue
       list.push({
         name: t.name.slice(0, 60),
         timerState: String(t.state || "").slice(0, 20),
@@ -124,11 +144,13 @@ BarWidget {
       if (j < timerModel.count && timerModel.get(j).name === list[j].name) {
         timerModel.set(j, list[j])
       } else {
-        if (j < timerModel.count) timerModel.remove(j, timerModel.count - j)
+        if (j < timerModel.count)
+          timerModel.remove(j, timerModel.count - j)
         timerModel.append(list[j])
       }
     }
-    if (timerModel.count > list.length) timerModel.remove(list.length, timerModel.count - list.length)
+    if (timerModel.count > list.length)
+      timerModel.remove(list.length, timerModel.count - list.length)
   }
 
   // `t- ctl -n NAME <words>`. No shell parses the words: they only land in
@@ -136,10 +158,14 @@ BarWidget {
   // terminal would.
   function ctlFor(name, words) {
     var argv = ["bash", "-lc", 'exec "$@"', "bash", root.command, "ctl"]
-    if (name) argv.push("-n", name)
+    if (name)
+      argv.push("-n", name)
     // A stopped timer leaves the list at once, not when it has quit.
-    if (words[0] === "stop" && name) root.dropRow(name)
-    var p = ctlRunner.createObject(root, { command: argv.concat(words) })
+    if (words[0] === "stop" && name)
+      root.dropRow(name)
+    var p = ctlRunner.createObject(root, {
+      command: argv.concat(words)
+    })
     p.running = true
   }
 
@@ -170,8 +196,7 @@ BarWidget {
   function openWindow(timer) {
     if (timer.headless) {
       // If attaching fails (an older t-), keep the terminal open to read why.
-      Util.execArgv(["omarchy-launch-tui", "--app-id=org.omarchy.tminus", "bash", "-c", attachScript, "attach",
-        root.command, timer.name])
+      Util.execArgv(["omarchy-launch-tui", "--app-id=org.omarchy.tminus", "bash", "-c", attachScript, "attach", root.command, timer.name])
     } else if (timer.pid > 1) {
       // The window belongs to the terminal: walk up from t- to a process
       // Hyprland knows as a client. The pid is a number from t-'s JSON.
@@ -182,10 +207,7 @@ BarWidget {
 
   readonly property string attachScript: '"$1" ctl -n "$2" attach || read -rsn1 -p "Press a key to close"'
 
-  readonly property string focusScript: 'p=$1; clients=$(hyprctl clients -j | jq -r ".[].pid"); '
-    + 'while [ "${p:-0}" -gt 1 ]; do '
-    + 'if grep -qx "$p" <<<"$clients"; then exec hyprctl dispatch focuswindow "pid:$p"; fi; '
-    + 'p=$(ps -o ppid= -p "$p" | tr -d " "); done'
+  readonly property string focusScript: 'p=$1; clients=$(hyprctl clients -j | jq -r ".[].pid"); ' + 'while [ "${p:-0}" -gt 1 ]; do ' + 'if grep -qx "$p" <<<"$clients"; then exec hyprctl dispatch focuswindow "pid:$p"; fi; ' + 'p=$(ps -o ppid= -p "$p" | tr -d " "); done'
 
   // Aimed at the timer on display.
   function ctl(words) {
@@ -204,13 +226,16 @@ BarWidget {
     for (var i = 0; i < text.length; i++) {
       var c = text[i]
       if (quote) {
-        if (c === quote) quote = ""
-        else word += c
+        if (c === quote)
+          quote = ""
+        else
+          word += c
       } else if (c === '"' || c === "'") {
         quote = c
         inWord = true
       } else if (c === " " || c === "\t" || c === "\n") {
-        if (inWord) out.push(word)
+        if (inWord)
+          out.push(word)
         word = ""
         inWord = false
       } else {
@@ -218,7 +243,8 @@ BarWidget {
         inWord = true
       }
     }
-    if (inWord) out.push(word)
+    if (inWord)
+      out.push(word)
     return out
   }
 
@@ -230,7 +256,8 @@ BarWidget {
   property string startError: ""
   function startWith(args, fromField) {
     var argv = root.words(args)
-    if (argv.length === 0 || checker.running) return
+    if (argv.length === 0 || checker.running)
+      return
     checker.argv = argv
     checker.fromField = fromField
     checker.command = ["bash", "-lc", 'exec "$@"', "bash", root.command, "--check"].concat(argv, ["--headless"])
@@ -246,7 +273,8 @@ BarWidget {
       startField.text = ""
       root.clearSuggestions()
     }
-    if (root.popupOpen) refreshSoon.restart()
+    if (root.popupOpen)
+      refreshSoon.restart()
   }
 
   // The first line of t-'s complaint, without its `tminus: ` / `error: `.
@@ -254,7 +282,8 @@ BarWidget {
     var lines = String(raw || "").split("\n")
     for (var i = 0; i < lines.length; i++) {
       var line = lines[i].trim().replace(/^(tminus|error): */, "")
-      if (line !== "") return line.length > 300 ? line.slice(0, 299) + "\u2026" : line
+      if (line !== "")
+        return line.length > 300 ? line.slice(0, 299) + "\u2026" : line
     }
     return strings.t("popup.startFailed").arg(exitCode)
   }
@@ -263,10 +292,14 @@ BarWidget {
     id: checker
     property var argv: []
     property bool fromField: false
-    stderr: StdioCollector { id: checkerErrors }
-    onExited: function(exitCode) {
-      if (exitCode === 0) root.started(checker.argv, checker.fromField)
-      else root.startError = root.errorLine(checkerErrors.text, exitCode)
+    stderr: StdioCollector {
+      id: checkerErrors
+    }
+    onExited: function (exitCode) {
+      if (exitCode === 0)
+        root.started(checker.argv, checker.fromField)
+      else
+        root.startError = root.errorLine(checkerErrors.text, exitCode)
     }
   }
 
@@ -290,9 +323,10 @@ BarWidget {
   readonly property var shownSuggestions: {
     var text = startField.text
     var start = root.currentWordStart(text)
-    if (start < 0 || start !== root.suggestionsStart) return []
+    if (start < 0 || start !== root.suggestionsStart)
+      return []
     var word = text.slice(start)
-    return root.suggestions.filter(function(item) {
+    return root.suggestions.filter(function (item) {
       return item.value.indexOf(word) === 0 && item.value !== word
     })
   }
@@ -305,18 +339,27 @@ BarWidget {
     var quote = ""
     for (var i = 0; i < text.length; i++) {
       var c = text[i]
-      if (quote) { if (c === quote) quote = "" }
-      else if (c === '"' || c === "'") quote = c
-      else if (c === " " || c === "\t") start = i + 1
+      if (quote) {
+        if (c === quote)
+          quote = ""
+      } else if (c === '"' || c === "'")
+        quote = c
+      else if (c === " " || c === "\t")
+        start = i + 1
     }
     return quote ? -1 : start
   }
 
   function complete(text) {
     var start = root.currentWordStart(text)
-    if (start < 0) { root.setSuggestions(text, []); return }
+    if (start < 0) {
+      root.setSuggestions(text, [])
+      return
+    }
     root.requestedText = text
-    if (completer.running) return  // picked up when it exits
+    if (completer.running)
+      // picked up when it exits
+      return
     var argv = root.words(text.slice(0, start))
     argv.push(text.slice(start))
     completer.command = ["bash", "-lc", 'COMPLETE=fish exec "$@"', "bash", root.command, "--", "t-"].concat(argv)
@@ -332,11 +375,17 @@ BarWidget {
       var tab = lines[i].indexOf("\t")
       var value = (tab < 0 ? lines[i] : lines[i].slice(0, tab)).slice(0, 80)
       var help = tab < 0 ? "" : lines[i].slice(tab + 1).slice(0, 300)
-      if (value === "" || value === word) continue
+      if (value === "" || value === word)
+        continue
       // Flags only once one is being typed; subcommands never start a timer.
-      if (value[0] === "-" && word[0] !== "-") continue
-      if (["ctl", "completions", "man", "help"].indexOf(value) !== -1) continue
-      list.push({ value: value, help: help })
+      if (value[0] === "-" && word[0] !== "-")
+        continue
+      if (["ctl", "completions", "man", "help"].indexOf(value) !== -1)
+        continue
+      list.push({
+        value: value,
+        help: help
+      })
     }
     root.setSuggestions(text, list)
   }
@@ -358,7 +407,8 @@ BarWidget {
     var item = root.shownSuggestions[index]
     var text = startField.text
     var start = root.currentWordStart(text)
-    if (!item || start < 0) return
+    if (!item || start < 0)
+      return
     startField.text = text.slice(0, start) + item.value + " "
     startField.cursorPosition = startField.text.length
   }
@@ -369,12 +419,15 @@ BarWidget {
     stdout: StdioCollector {
       onStreamFinished: {
         // Only for the text it was asked about; typing on asks again.
-        if (completer.forText === startField.text) root.parseSuggestions(completer.forText, text)
+        if (completer.forText === startField.text)
+          root.parseSuggestions(completer.forText, text)
       }
     }
     onExited: {
       if (root.requestedText !== completer.forText && root.requestedText === startField.text)
-        Qt.callLater(function() { root.complete(startField.text) })
+        Qt.callLater(function () {
+          root.complete(startField.text)
+        })
     }
   }
 
@@ -382,8 +435,10 @@ BarWidget {
     id: completionDebounce
     interval: 80
     onTriggered: {
-      if (startField.text.trim() === "") root.clearSuggestions()
-      else root.complete(startField.text)
+      if (startField.text.trim() === "")
+        root.clearSuggestions()
+      else
+        root.complete(startField.text)
     }
   }
 
@@ -391,16 +446,19 @@ BarWidget {
     id: follow
     command: {
       var argv = ["bash", "-lc", 'exec "$@"', "bash", root.command, "ctl"]
-      if (root.shownName) argv.push("-n", root.shownName)
+      if (root.shownName)
+        argv.push("-n", root.shownName)
       return argv.concat(["status", "--follow"])
     }
     running: true
     stdout: SplitParser {
-      onRead: function(line) { root.update(line) }
+      onRead: function (line) {
+        root.update(line)
+      }
     }
     // Following never ends by itself, so an exit means t- is missing, too old
     // or was killed: show nothing and try again in a while.
-    onExited: function(exitCode) {
+    onExited: function (exitCode) {
       // Stopped on purpose to follow another timer: start it again at once.
       if (root.restarting) {
         root.restarting = false
@@ -440,11 +498,13 @@ BarWidget {
     command: ["bash", "-lc", 'exec "$@"', "bash", root.command, "ctl", "list", "--json"]
     stdout: StdioCollector {
       onStreamFinished: {
-        if (lister.generation === root.listGeneration) root.updateList(text)
+        if (lister.generation === root.listGeneration)
+          root.updateList(text)
       }
     }
     onExited: {
-      if (lister.generation !== root.listGeneration && root.popupOpen) Qt.callLater(root.refreshList)
+      if (lister.generation !== root.listGeneration && root.popupOpen)
+        Qt.callLater(root.refreshList)
     }
   }
 
@@ -454,11 +514,13 @@ BarWidget {
   property int listGeneration: 0
   function listChanged() {
     root.listGeneration++
-    if (root.popupOpen) root.refreshList()
+    if (root.popupOpen)
+      root.refreshList()
   }
 
   function refreshList() {
-    if (lister.running) return
+    if (lister.running)
+      return
     lister.generation = root.listGeneration
     lister.running = true
   }
@@ -478,7 +540,11 @@ BarWidget {
     onTriggered: root.listChanged()
   }
 
-  onPopupOpenChanged: if (!popupOpen) { timerModel.clear(); clearSuggestions(); startError = "" }
+  onPopupOpenChanged: if (!popupOpen) {
+    timerModel.clear()
+    clearSuggestions()
+    startError = ""
+  }
 
   // The alert pulse: white for a moment after each tick, then red again.
   // Two plain color changes; the button's own color transition fades
@@ -492,35 +558,34 @@ BarWidget {
 
   WidgetButton {
     id: button
-    activeColor: root.timerState === "alert" && root.alertFlash && !Style.reduceMotion
-      ? root.bar.barForeground : root.bar.urgent
+    activeColor: root.timerState === "alert" && root.alertFlash && !Style.reduceMotion ? root.bar.barForeground : root.bar.urgent
     anchors.fill: parent
     bar: root.bar
-    text: root.running
-      ? (root.vertical ? root.glyphFor(root.timerState) : root.glyphFor(root.timerState) + "  " + root.clock)
-      : root.iconTimer
+    text: root.running ? (root.vertical ? root.glyphFor(root.timerState) : root.glyphFor(root.timerState) + "  " + root.clock) : root.iconTimer
     active: root.timerState === "alert" || root.timerState === "done" || root.timerState === "waiting"
     dimmed: root.timerState === "paused" || !root.running
-    tooltipText: root.popupOpen ? ""
-      : root.running ? root.tooltip
-      : root.broken ? strings.t("tooltip.missing").arg(root.command)
-      : strings.t("tooltip.start").arg(root.startArgs)
+    tooltipText: root.popupOpen ? "" : root.running ? root.tooltip : root.broken ? strings.t("tooltip.missing").arg(root.command) : strings.t("tooltip.start").arg(root.startArgs)
 
-    onPressed: function(b) {
+    onPressed: function (b) {
       if (b === Qt.RightButton) {
         root.popupOpen = !root.popupOpen
         return
       }
       if (!root.running) {
-        if (b === Qt.LeftButton && root.canStart) root.start()
+        if (b === Qt.LeftButton && root.canStart)
+          root.start()
         return
       }
-      if (b === Qt.MiddleButton || root.timerState === "waiting") root.ctl(["next"])
-      else if (root.timerState === "done") root.ctl(["stop"])
-      else root.ctl(["toggle"])
+      if (b === Qt.MiddleButton || root.timerState === "waiting")
+        root.ctl(["next"])
+      else if (root.timerState === "done")
+        root.ctl(["stop"])
+      else
+        root.ctl(["toggle"])
     }
-    onWheelMoved: function(delta) {
-      if (!root.running || delta === 0) return
+    onWheelMoved: function (delta) {
+      if (!root.running || delta === 0)
+        return
       root.ctl([delta > 0 ? "add" : "sub", root.step])
     }
   }
@@ -615,13 +680,20 @@ BarWidget {
                 required property int pid
 
                 readonly property var timer: ({
-                  name: name, state: timerState, clock: clock, title: title, segment: segment, headless: headless, pid: pid
-                })
+                    name: name,
+                    state: timerState,
+                    clock: clock,
+                    title: title,
+                    segment: segment,
+                    headless: headless,
+                    pid: pid
+                  })
                 readonly property bool shown: timer.name === root.timerName
                 readonly property bool ended: timer.state === "done" || timer.state === "waiting"
 
                 width: timerList.width
-          onHeightChanged: if (height > 0) root.timerRowHeight = height
+                onHeightChanged: if (height > 0)
+                  root.timerRowHeight = height
                 height: rowInner.implicitHeight + Style.space(10)
                 radius: Style.spacing.labelGap
                 color: shown ? Style.selectedFillFor(root.bar.foreground, Commons.Color.accent) : "transparent"
@@ -630,9 +702,7 @@ BarWidget {
                 readonly property var shownSpec: Border.controlSpec("normal", root.bar.foreground, Commons.Color.accent)
                 // The other rows get a faint outline of the same width, so
                 // each timer reads as its own box.
-                readonly property var restSpec: Border.flat(
-                  Qt.rgba(root.bar.foreground.r, root.bar.foreground.g, root.bar.foreground.b, 0.15),
-                  Border.uniformWidth(shownSpec))
+                readonly property var restSpec: Border.flat(Qt.rgba(root.bar.foreground.r, root.bar.foreground.g, root.bar.foreground.b, 0.15), Border.uniformWidth(shownSpec))
                 borderSpec: shown ? shownSpec : restSpec
 
                 // Click a row to show that timer in the bar. Under the row's
@@ -695,7 +765,9 @@ BarWidget {
                       elide: Text.ElideRight
                       width: parent.width - controls.width - Style.space(8)
 
-                      HoverHandler { id: titleHover }
+                      HoverHandler {
+                        id: titleHover
+                      }
                     }
 
                     Text {
@@ -703,7 +775,8 @@ BarWidget {
                       textFormat: Text.PlainText
                       text: {
                         var parts = [timerRow.timer.name]
-                        if (timerRow.timer.segment) parts.push(timerRow.timer.segment)
+                        if (timerRow.timer.segment)
+                          parts.push(timerRow.timer.segment)
                         parts.push(strings.t(timerRow.timer.headless ? "mode.headless" : "mode.window"))
                         return parts.join(" \u00b7 ")
                       }
@@ -713,7 +786,9 @@ BarWidget {
                       elide: Text.ElideRight
                       width: parent.width
 
-                      HoverHandler { id: detailHover }
+                      HoverHandler {
+                        id: detailHover
+                      }
                     }
                   }
 
@@ -762,7 +837,10 @@ BarWidget {
                     }
 
                     // A wider gap between the groups: time, playback, window.
-                    Item { width: Style.space(6); height: 1 }
+                    Item {
+                      width: Style.space(6)
+                      height: 1
+                    }
 
                     Button {
                       iconText: timerRow.timer.state === "paused" ? root.iconPlay : root.iconPause
@@ -788,7 +866,10 @@ BarWidget {
                     }
 
                     // A wider gap between the groups: time, playback, window.
-                    Item { width: Style.space(6); height: 1 }
+                    Item {
+                      width: Style.space(6)
+                      height: 1
+                    }
 
                     Button {
                       iconText: root.iconTerminal
@@ -841,14 +922,15 @@ BarWidget {
             completionDebounce.restart()
           }
 
-          Keys.onPressed: function(event) {
+          Keys.onPressed: function (event) {
             var count = root.shownSuggestions.length
             var shown = count > 0
             if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
               submit()
               event.accepted = true
             } else if (event.key === Qt.Key_Tab) {
-              if (shown) root.acceptSuggestion(root.shownIndex)
+              if (shown)
+                root.acceptSuggestion(root.shownIndex)
               event.accepted = true
             } else if (event.key === Qt.Key_Down && shown) {
               root.suggestionIndex = (root.shownIndex + 1) % count
@@ -857,8 +939,10 @@ BarWidget {
               root.suggestionIndex = (root.shownIndex + count - 1) % count
               event.accepted = true
             } else if (event.key === Qt.Key_Escape) {
-              if (shown) root.clearSuggestions()
-              else root.close()
+              if (shown)
+                root.clearSuggestions()
+              else
+                root.close()
               event.accepted = true
             }
           }
