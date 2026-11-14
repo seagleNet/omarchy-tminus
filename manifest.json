@@ -2,7 +2,7 @@
     "schemaVersion": 1,
     "id": "seaglenet.tminus",
     "name": "tminus",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "author": "seagleNet",
     "license": "MIT",
     "description": "The running tminus countdown in the bar, with a popup to control every running timer",
