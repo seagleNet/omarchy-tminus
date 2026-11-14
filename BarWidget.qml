@@ -31,7 +31,9 @@ BarWidget {
   property string pinnedName: ""
   readonly property string shownName: pinnedName || followName
   readonly property string step: String(setting("step", "1m")).trim() || "1m"
-  readonly property string startArgs: String(setting("start", "")).trim()
+  // A pomodoro by default, so the widget is there to find before any timer
+  // runs; `"start": ""` hides it while none does.
+  readonly property string startArgs: String(setting("start", "@pomodoro")).trim()
 
   // From the last status line.
   property string clock: ""

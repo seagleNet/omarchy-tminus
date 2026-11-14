@@ -22,7 +22,7 @@
             "command": "t-",
             "name": "",
             "step": "1m",
-            "start": ""
+            "start": "@pomodoro"
         },
         "schema": [
             {
@@ -47,7 +47,7 @@
                 "key": "start",
                 "type": "string",
                 "label": "Start arguments",
-                "description": "With no timer running, show an icon that starts t- with these arguments, e.g. 25m:work 5m:break x4 --notify. It always runs --headless. Empty hides the widget while no timer runs."
+                "description": "With no timer running, show an icon that starts t- with these arguments (default @pomodoro, tminus's built-in preset), e.g. 25m:work 5m:break x4 --notify. It always runs --headless. Empty hides the widget while no timer runs."
             }
         ]
     }

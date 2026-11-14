@@ -7,7 +7,7 @@ timer:
 - **In the bar:** the newest running timer, with or without a window,
   including `--headless` ones that live only in the bar. Click to pause,
   scroll to add or take time. The final seconds pulse in the theme's urgent
-  color. It hides itself while no timer runs.
+  color. While no timer runs, an hourglass starts a pomodoro (see `start`).
 - **In its popup:** every running timer with its controls, a way to open any of
   them in a terminal with the big clock and effects, and a field to start
   another one, with `t-`'s own completion.
@@ -84,7 +84,7 @@ on save:
 | `command` | `t-` | The tminus binary, if the login shell's `PATH` doesn't have it (e.g. `~/.cargo/bin/t-`) |
 | `name` | | Follow only the timer with this name (`t- -n NAME`); empty follows the newest |
 | `step` | `1m` | Time added or taken per scroll notch and per stepper click |
-| `start` | | If set, an icon stays in the bar while no timer runs, and the popup gets a start button; both run `t- <start> --headless` |
+| `start` | `@pomodoro` | While no timer runs, an icon stays in the bar, and the popup gets a start button; both run `t- <start> --headless`. `""` hides the widget while no timer runs |
 
 The widget may be added more than once, e.g. one per named timer.
 
