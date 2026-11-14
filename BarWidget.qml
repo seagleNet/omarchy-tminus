@@ -445,7 +445,7 @@ BarWidget {
     activeColor: root.timerState === "alert" && root.alertFlash && !Style.reduceMotion ? root.bar.barForeground : root.bar.urgent
     anchors.fill: parent
     bar: root.bar
-    text: root.running ? (root.vertical ? root.glyphFor(root.timerState) : root.glyphFor(root.timerState) + "  " + root.clock) : root.iconTimer
+    text: root.running ? (root.vertical ? root.glyphFor(root.timerState) : root.glyphFor(root.timerState) + " " + root.clock) : root.iconTimer
     active: root.timerState === "alert" || root.timerState === "done" || root.timerState === "waiting"
     dimmed: root.timerState === "paused" || !root.running
     tooltipText: root.popupOpen ? "" : root.running ? root.tooltip : root.broken ? strings.t("tooltip.missing").arg(root.command) : strings.t("tooltip.start").arg(root.startArgs)
